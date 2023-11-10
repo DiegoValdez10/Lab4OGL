@@ -1,12 +1,10 @@
 import pygame as pg
 from pygame.locals import *
-from OpenGL.GL import GL_TRUE, glReadPixels, GL_RGB, GL_UNSIGNED_BYTE, GL_TRUE
-import glm
+from OpenGL.GL import glReadPixels, GL_RGB, GL_UNSIGNED_BYTE, GL_TRUE
 
 from gl import Renderer
 from Model import Model
-from shaders import vertexShader, fragmentShader
-
+from shaders import vertexShader, fragmentShader, customShader1, customShader2, customShader3
 
 width = 960
 height = 960
@@ -18,19 +16,21 @@ clock = pg.time.Clock()
 
 renderer = Renderer(screen)
 
-renderer.setShader(vertexShader, fragmentShader)
+# Lista de shaders disponibles
+shaders = [vertexShader, fragmentShader, customShader1, customShader2, customShader3]
+current_shader_index = 0
+
+renderer.setShader(*shaders[current_shader_index])
 
 renderer.loadModel(filename="umbreonHighPoly.obj",
                    textureFile="umbreon.bmp",
-                   potition=(0,0,-3),
-                   rotation=(0,45,0),
-                   scale=(1,1,1))
-
+                   position=(0, 0, -3),
+                   rotation=(0, 45, 0),
+                   scale=(1, 1, 1))
 
 speed = 1
 isRunning = True
 while isRunning:
-
     keys = pg.key.get_pressed()
     deltaTime = clock.tick(50) / 20
 
@@ -46,19 +46,23 @@ while isRunning:
                 pg.display.flip()
                 screen_surf = pg.image.fromstring(buffer, size, "RGB", GL_TRUE)
                 pg.image.save(screen_surf, "output.jpg")
+            elif event.key in [pg.K_1, pg.K_2, pg.K_3, pg.K_4, pg.K_5]:
+                # Cambiar el shader con las teclas numéricas (1, 2, 3, ...)
+                current_shader_index = int(event.unicode) - 1
+                renderer.setShader(*shaders[current_shader_index])
 
     if keys[K_RIGHT]:
-        renderer.camPosition.x += deltaTime  * speed
+        renderer.camPosition.x += deltaTime * speed
     elif keys[K_LEFT]:
-        renderer.camPosition.x -= deltaTime  * speed
+        renderer.camPosition.x -= deltaTime * speed
     if keys[K_UP]:
-        renderer.camPosition.y += deltaTime  * speed
+        renderer.camPosition.y += deltaTime * speed
     elif keys[K_DOWN]:
-        renderer.camPosition.y -= deltaTime  * speed
+        renderer.camPosition.y -= deltaTime * speed
     if keys[K_MINUS]:
-        renderer.camPosition.z += deltaTime  * speed
+        renderer.camPosition.z += deltaTime * speed
     elif keys[K_PERIOD]:
-        renderer.camPosition.z -= deltaTime  * speed
+        renderer.camPosition.z -= deltaTime * speed
 
     if keys[K_a]:
         renderer.camRotation.y += deltaTime * speed ** 2
@@ -71,6 +75,5 @@ while isRunning:
 
     renderer.render()
     pg.display.flip()
-
 
 pg.quit()
